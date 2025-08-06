@@ -1,1 +1,3 @@
 config.py
+
+# This ensures that my config.py file is hidden from my github pushes as it contains sensitive information.
