@@ -1,58 +1,48 @@
-import argparse 
+import argparse
 import requests
-from config import API_KEY
 import pandas as pd
+import json
 
-# 1. Create a parser object
-# The 'description' argument provides a quick summary when the user asks for help.
-parser = argparse.ArgumentParser(description="This script will fetch and process data from a public API.")
-
-# 2. Add arguments to the parser
-# I'm adding one simple argument: a 'query'. This is what the user will type after the script name.
-# 'help' provides a description of the argument.
-parser.add_argument("query", type=str, help="The search term to be sent to the API.")
-
-# 3. Parse the arguments
-# This line runs the parser and stores the values in a variable called 'args'.
+# My argparse code for command-line arguments
+parser = argparse.ArgumentParser(description="Fetches U.S. Crude Oil production data from the EIA API.")
+parser.add_argument("--api_key", type=str, required=True, help="My personal EIA API Key.")
+parser.add_argument("--route", type=str, required=True, help="The EIA API route for the data.")
 args = parser.parse_args()
 
-# 4. Use the arguments
-# I can now access the values of the 'query' argument using 'args.query'.
-print(f"You requested data for the search term: '{args.query}'")
+def fetch_eia_data(api_key, route):
+    """
+    Fetches data from the EIA API using the provided API key and route
+    """
+    # The base URL for the EIA API.
+    base_url = "https://api.eia.gov"
 
-def search_movies(query):
-    # The base URL for the movie search endpoint
-    search_url = "https://api.themoviedb.org/3/search/movie"
+    # Strip any leading/trailing slashes form the route for clean URL construction
+    clean_route = route.strip('/')
 
-    # The parameters to send with the request
-    params = {
-        "api_key": API_KEY,
-        "query": query # Use the query from argparse
-    }
+    # The full URL for the GET request
+    full_url = f"{base_url}/v2/{clean_route}?api_key={api_key}"
 
-    # Make the GET request to the API
-    response = requests.get(search_url, params=params)
+    print(f"Attempting to fetch data from: {full_url}") # This line is for debugging
 
-    # Error handling and data processing 
-    return response 
+    try:
+        response = requests.get(full_url, timeout=10, verify=False) # Added 'verify=False' to tell Python to skip the security check and trust the connection as this was raising an error when running my code.
+        # This will raise an exception for HTTP error codes (4xx or 5xx)
+        response.raise_for_status()
+        return response.json()
+    except requests.exceptions.RequestException as e:
+        print(f"An error occured: {e}")
+        return None
 
 if __name__ == "__main__":
-    # Assuming args.query is the search term from argparse
-    response = search_movies(args.query)
+    print(f"Fetching data from route: {args.route}")
 
-    # Check for a successful response 
-    if response.status_code == 200:
-        data = response.json()
-        # The actual movie data is in the 'results' key
-        movie_list = data.get("results", [])
+    eia_data = fetch_eia_data(args.api_key, args.route)
 
-        if movies_list:
-            df = pd.DataFrame(movie_list)
-            print(f"DataFrame created with {df.shape[0]} rows and {df.shape[1]} colunms.")
-            print("First 5 movies retrieved:")
-            # Let's print the 'title' and 'release_date' to see what we got
-            print(df[['title', 'release_date', 'vote_average']].head())
-        else:
-            print("No movies found for that query.")
-    else: 
-        print(f"Error fetching data. Status code: {response.status_code}")
+    if eia_data and "data" in eia_data.get("response", {}):
+        data_records = eia_data["response"]["data"]
+        df = pd.DataFrame(data_records)
+        print(f"\nDataFrame created with {df.shape[0]} rows and {df.shape[1]} columns.")
+        print("First 5 records retrieved")
+        print(df.head())
+    else:
+        print("Failed to fetch data or 'data' key not found.") 
