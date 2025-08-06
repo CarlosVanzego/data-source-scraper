@@ -28,7 +28,7 @@ def fetch_eia_data(api_key, route):
     # The base URL is th emain entry point for the EIA's API.
     base_url = "https://api.eia.gov"
 
-    # I used the Strip functino to strip any leading/trailing slashes form the route for clean/correct URL construction.
+    # I used the Strip function to strip any leading/trailing slashes form the route for clean/correct URL construction.
     clean_route = route.strip('/')
 
     # I built the complete URL by combining the base, the API version, the route, and teh API key; for the GET request.
@@ -76,3 +76,36 @@ if __name__ == "__main__":
         print(df.head())
     else:
         print("Failed to fetch data or 'data' key not found.") 
+
+def clean_eia_data(df):
+    """
+    Cleans and transforms EIA data DataFrame
+    """
+    print("Starting data cleaning...🧼")
+    # Step 1: Rename columns for clarity
+    df.rename(columns={'period': 'date', 'value': 'production_bbl_per_day'}, inplace=True)
+
+    # Step 2: Convert the data column into datetime objects
+    df['date'] = pd.to_datetime(df['date'], format='%Y-%m') # Format depends on my data
+
+    # Step 3: Handle potential missing values (if any)
+    df.dropna(inplace=True) 
+
+    # More cleaning or filtering steps here
+    print("Data cleaning complete.")
+    return df
+
+if __name__ == "__main__":
+    print(f"Fetching data from route: {args.route}")
+    eia_data = fetch_eia_data(args.api_key, args.route)
+
+    if eia_data and "data" in eia_data.get("response", {}):
+        data_records = eia_data["response"]["data"]
+        df = pd.DataFrame(data_records)
+
+        # Here I am calling my new cleaning function
+        cleaned_df = clean_eia_data(df)
+
+        print("First 5 cleaned records:")
+        print(cleaned_df.head())
+        print(f"Failed to fetch data or 'data' key not found.")
