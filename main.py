@@ -55,6 +55,30 @@ def fetch_eia_data(api_key, route):
         return None
     
 
+def clean_eia_data(df):
+    """
+    Cleans and transforms the raw EIA DataFrame into a usable format.
+    This function isolates the data quality and transformation logic.
+    """
+    print("Starting data cleaning...🧼")
+
+    # Step 1: Rename columns for clarity.
+    # The original API columns often have generic names ('period', 'value').
+    # I renmame them to more descriptive, understandable names for analysis.
+    df.rename(columns={'period': 'date', 'value': 'production_bbl_per_day'}, inplace=True)
+
+    # Step 2: Convert the 'date' column to a proper datetime format.
+    # Raw data is often a string; Converting it to a datetime object enables powerful time-series analysis with pandas.
+    df['date'] = pd.to_datetime(df['date'], format='%Y-%m') # Format depends on my data
+
+    # Step 3: Handle potential missing values (if any).
+    # Dropping rows with any NaN values is a simple method for ensuring data quality.
+    # This is a common first step in a data pipeline.
+    df.dropna(inplace=True) 
+
+    print("Data cleaning complete.")
+    return df
+
 # Part 4: Execute the Script (The main entry point)
 # The 'if __name__ == "__main__":' block ensures this code only runs when the script is executed directly (not when imported as a module)
 if __name__ == "__main__":
@@ -71,41 +95,13 @@ if __name__ == "__main__":
 
         # This line creates a Pandas DataFrame, which is the table-like structure I want.
         df = pd.DataFrame(data_records)
-        print(f"\nDataFrame created with {df.shape[0]} rows and {df.shape[1]} columns.")
-        print("First 5 records retrieved")
-        print(df.head())
-    else:
-        print("Failed to fetch data or 'data' key not found.") 
 
-def clean_eia_data(df):
-    """
-    Cleans and transforms EIA data DataFrame
-    """
-    print("Starting data cleaning...🧼")
-    # Step 1: Rename columns for clarity
-    df.rename(columns={'period': 'date', 'value': 'production_bbl_per_day'}, inplace=True)
-
-    # Step 2: Convert the data column into datetime objects
-    df['date'] = pd.to_datetime(df['date'], format='%Y-%m') # Format depends on my data
-
-    # Step 3: Handle potential missing values (if any)
-    df.dropna(inplace=True) 
-
-    # More cleaning or filtering steps here
-    print("Data cleaning complete.")
-    return df
-
-if __name__ == "__main__":
-    print(f"Fetching data from route: {args.route}")
-    eia_data = fetch_eia_data(args.api_key, args.route)
-
-    if eia_data and "data" in eia_data.get("response", {}):
-        data_records = eia_data["response"]["data"]
-        df = pd.DataFrame(data_records)
-
-        # Here I am calling my new cleaning function
+        # Here I am calling my cleaning function
         cleaned_df = clean_eia_data(df)
 
-        print("First 5 cleaned records:")
+        # These lines print the results to my terminal to verify the process.
+        print("\nFirst 5 records retrieved and cleaned:")
         print(cleaned_df.head())
-        print(f"Failed to fetch data or 'data' key not found.")
+        print(f"\nFinal DataFrame shape: {cleaned_df.shape}")
+    else:
+        print("Failed to fetch data or 'data' key not found.") 
