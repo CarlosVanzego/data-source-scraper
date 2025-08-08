@@ -4,10 +4,12 @@
 # 'requests' is for making HTTP requests to APIs.
 # 'pandas' is for data manipulation and analysis.
 # 'json' is for working with JSON data, which is the format the API sends.
+# 'os' is a built-in library that helps with operating system-level task, like creating directories.
 import argparse
 import requests
 import pandas as pd
 import json
+import os 
 
 # Part 2: Set up Command-Line Arguments
 # This section makes my script flexible. Instead of harcoding values.
@@ -20,7 +22,7 @@ parser.add_argument("--route", type=str, required=True, help="The EIA API route 
 args = parser.parse_args()
 
 # Part 3: Define the Core Functionality (API Call)
-# This is a reusable function that handles the cmoplex logic of connecting to the API and dealing with potential errors.
+# This is a reusable function that handles the complex logic of connecting to the API and dealing with potential errors.
 def fetch_eia_data(api_key, route):
     """
     Fetches data from the EIA API using the provided API key and route
@@ -54,7 +56,7 @@ def fetch_eia_data(api_key, route):
         print(f"An error occured: {e}")
         return None
     
-
+# This function cleans and transforms the raw EIA data into a usable format.
 def clean_eia_data(df):
     """
     Cleans and transforms the raw EIA DataFrame into a usable format.
@@ -78,6 +80,22 @@ def clean_eia_data(df):
 
     print("Data cleaning complete.")
     return df
+
+# This function is responsible for writing the DataFrame to a file.
+def save_data_to_csv(df, output_path):
+    """
+    Saves the DataFrame to a CSV file
+    """
+    # Create the output directory if it doesn't exist
+    output_dir = os.path.dirname(output_path)
+    if not os.path.exists(output_dir):
+        os.makedirs(output_dir)
+        print(f"Created directory: {output_dir}")
+
+    print(f"Saving data to {output_path}...")
+    df.to_csv(output_path, index=False)
+    print("Data successfully saved.")
+
 
 # Part 4: Execute the Script (The main entry point)
 # The 'if __name__ == "__main__":' block ensures this code only runs when the script is executed directly (not when imported as a module)
