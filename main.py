@@ -5,11 +5,16 @@
 # 'pandas' is for data manipulation and analysis.
 # 'json' is for working with JSON data, which is the format the API sends.
 # 'os' is a built-in library that helps with operating system-level task, like creating directories.
+# 'logging' is a module that emits log messages from programs; It's used to record events that occur during the execution of an application.
 import argparse
 import requests
 import pandas as pd
 import json
 import os 
+import logging
+
+# Configuring the logging module 
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 # Part 2: Set up Command-Line Arguments
 # This section makes my script flexible. Instead of harcoding values.
@@ -21,86 +26,96 @@ parser.add_argument("--route", type=str, required=True, help="The EIA API route 
 # I'm then storing the parsed arguments into a variable called 'args'
 args = parser.parse_args()
 
-# Part 3: Define the Core Functionality (API Call)
-# This is a reusable function that handles the complex logic of connecting to the API and dealing with potential errors.
+# Part 3: Define the Core Functions (API call)
+# This is a reusable function that handles the logic of connecting to the API and dealing with potential errors; It takes the parameters 'api_key' and 'route', this is where my command in the command-line will take those two pieces of information, then the function returns that data from the EIA API.
 def fetch_eia_data(api_key, route):
     """
     Fetches data from the EIA API using the provided API key and route
     """
-    # The base URL is th emain entry point for the EIA's API.
+    # The base URL is the main entry point for the EIA's API.
     base_url = "https://api.eia.gov"
 
     # I used the Strip function to strip any leading/trailing slashes form the route for clean/correct URL construction.
     clean_route = route.strip('/')
 
-    # I built the complete URL by combining the base, the API version, the route, and teh API key; for the GET request.
+    # I built the complete URL by combining the base, the API version, the route, and the API key; for the GET request.
     full_url = f"{base_url}/v2/{clean_route}?api_key={api_key}"
 
-    print(f"Attempting to fetch data from: {full_url}") # This line is for debugging
+    # Using this line instead of a print statement stating the data is being fetched.
+    logging.info(f"Attempting to fetch data from: {full_url}")
 
     try:
         # Here I make the actual GET request to the URL.
         # 'timeout=10' prevents the script from hanging forever if there's no response.
-        response = requests.get(full_url, timeout=10, verify=False) 
         # 'verify=False' temporarily disables the SSL certificate check and tells Python to trust the connection as this was raising an error when running my code in development.
+        response = requests.get(full_url, timeout=10, verify=False) 
 
         # This line checks the HTTP status code.
         # If the code is 4xx or 5xx, it raises an exception to stop the program.
         response.raise_for_status()
 
+        logging.info("Data fetched successfully.")
+
         # I return the data as a Python Dictionary.
         return response.json()
     
     except requests.exceptions.RequestException as e:
-        # This block catches any errors during the request (e.g., connection issues, 500 errors)
-        print(f"An error occured: {e}")
+        # This block catches any errors during the request (e.g., connection issues, 500 errors)    
+        logging.error(f"An error occured: {e}")
         return None
     
-# This function cleans and transforms the raw EIA data into a usable format.
+# This function cleans and transforms the raw EIA data from the API into a usable format; it takes the parameter 'df' (short for DataFrame) which is the data being cleaned and the function returns the newly cleaned data.
 def clean_eia_data(df):
     """
-    Cleans and transforms the raw EIA DataFrame into a usable format.
-    This function isolates the data quality and transformation logic.
+    Cleans and transforms the raw EIA DataFrame.
+
+    Args:
+        df: The raw DataFrame from the EIA API
+
+    Returns:
+        A cleaned and trasnfomed DataFrame.
     """
-    print("Starting data cleaning...🧼")
+    logging.info("Starting data cleaning...🧼")
 
     # Step 1: Rename columns for clarity.
     # The original API columns often have generic names ('period', 'value').
     # I renmame them to more descriptive, understandable names for analysis.
     df.rename(columns={'period': 'date', 'value': 'production_bbl_per_day'}, inplace=True)
 
-    # Step 2: Convert the 'date' column to a proper datetime format.
+    # Step 2: Converting the 'date' column to a proper datetime format.
     # Raw data is often a string; Converting it to a datetime object enables powerful time-series analysis with pandas.
     df['date'] = pd.to_datetime(df['date'], format='%Y-%m') # Format depends on my data
 
     # Step 3: Handle potential missing values (if any).
-    # Dropping rows with any NaN values is a simple method for ensuring data quality.
-    # This is a common first step in a data pipeline.
+    # I'm using the 'dropna' function for dropping rows with any NaN values; This is a method for ensuring data quality and a common first step in a data pipeline.
     df.dropna(inplace=True) 
 
-    print("Data cleaning complete.")
+    logging.info("Data cleaning complete.")
     return df
 
-# This function is responsible for writing the DataFrame to a file.
+# This function is responsible for writing the DataFrame to a file; I use the params 'df' (the data), and 'output_path' which is the final destination of the data (the csv file); This function does nto return anything because its saing the data to a file.
 def save_data_to_csv(df, output_path):
     """
-    Saves the DataFrame to a CSV file
+    Saves the DataFrame to a CSV file.
+
+    Args:
+        df: The DataFrame to save.
+        output_data: The file path to save the data to.
     """
     # Create the output directory if it doesn't exist
     output_dir = os.path.dirname(output_path)
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
-        print(f"Created directory: {output_dir}")
-
-    print(f"Saving data to {output_path}...")
+        logging.info(f"Created directory: {output_dir}")
+    logging.info(f"Saving data to {output_path}...")
+    # This line prints a statemement letting me know the data has been successfully saved to the csv file.
     df.to_csv(output_path, index=False)
-    print("Data successfully saved.")
+    logging.info("Data successfully saved.")
 
 
 # Part 4: Execute the Script (The main entry point)
 # The 'if __name__ == "__main__":' block ensures this code only runs when the script is executed directly (not when imported as a module)
 if __name__ == "__main__":
-    print(f"Fetching data from route: {args.route}")
 
     # Here I call my function to get the raw data from the API.
     eia_data = fetch_eia_data(args.api_key, args.route)
@@ -116,10 +131,10 @@ if __name__ == "__main__":
 
         # Here I am calling my cleaning function
         cleaned_df = clean_eia_data(df)
+        output_file = 'output/eia_crude_oil_production.csv'
+        save_data_to_csv(cleaned_df, output_file)
+        logging.info("Pipeline executed succesfully.")
 
-        # These lines print the results to my terminal to verify the process.
-        print("\nFirst 5 records retrieved and cleaned:")
-        print(cleaned_df.head())
-        print(f"\nFinal DataFrame shape: {cleaned_df.shape}")
+        # These lines print the results to my terminal to verify the process of information that.
     else:
-        print("Failed to fetch data or 'data' key not found.") 
+        logging.info("Pipeline failed to execute.")
