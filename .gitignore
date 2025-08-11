@@ -1,3 +1,12 @@
-config.py
+# Ignore Python-specific files
+__pycache__/
+*.pyc
 
-# This ensures that my config.py file is hidden from my github pushes as it contains sensitive information.
+# Ignore virtual environment
+venv/
+
+# Ignore porject-specific files
+config.py
+/output/
+
+# This ensures that the files mentioned above are hidden from my github pushes as they contains sensitive information.

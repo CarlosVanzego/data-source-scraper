@@ -7,8 +7,10 @@ import pandas as pd
 from main import clean_eia_data
 
 @pytest.fixture
+# This function is for sampling the raw DataFrame data, it takes no arguments, and returns the data for testing.
 def raw_data_frame():
     """Returns a sample raw DataFrame for testing"""
+    # The 'data' variable stores the structure of the returned data.
     data = {
         'period': ['2024-01', '2025-02'],
         'value': ['100', '200'],
@@ -16,12 +18,14 @@ def raw_data_frame():
     }
     return pd.DataFrame(data)
 
+# This function is for testing that renaming the test columns the correct way worked, it takes the raw_data_frame function as a parameter, and returns nothing.
 def test_columns_renamed_correctly(raw_data_frame):
     """Test that the cleaning function renames columns as expected"""
     cleaned_df = clean_eia_data(raw_data_frame)
     expected_columns = ['date', 'production_bbl_per_day', 'stateid']
     assert list(cleaned_df.columns) == expected_columns
 
+# This function is for testing that 'date' and 'production' columns have the correct data types, it takes the raw_data_frame function as a parameter, and returns nothing.
 def test_data_types_converted_correctly(raw_data_frame):
     """Test that the 'date' and 'production' columns have the right data types"""
     cleaned_df = clean_eia_data(raw_data_frame)
