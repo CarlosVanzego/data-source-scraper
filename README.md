@@ -1,7 +1,7 @@
 ﻿# EIA Crude Oil Data Pipeline
 
 # Project Description
-This project is a simple, end-to-end data pipeline built in Python. It extracts U.S. crude oil production data fromo the EIA's Open Data API, transforms the raw data, and loads it into a clean, local CSV file. This project demonstrates foundational data engineering skills using a command-line interface.
+This project is a simple, end-to-end data pipeline built in Python. It extracts U.S. crude oil production data from the EIA's Open Data API, transforms the raw data, and loads it into a clean, local CSV file. This project demonstrates foundational data engineering skills using a command-line interface.
 
 # Features
 - Data Extraction: Connects to the EIA's v2 API to fetch crude oil production data.
@@ -33,6 +33,7 @@ python main.py --api_key YOUR_API_KEY --route petroleum/crd/crpdn/data
 - `pandas` for data manipulation
 - `pytest` for unit testing
 - `logging` for error handling
+
 
 
 
