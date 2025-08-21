@@ -84,7 +84,7 @@ def clean_eia_data(df):
         df: The raw DataFrame from the EIA API
 
     Returns:
-        A cleaned and trasnfomed DataFrame.
+        A cleaned and transformed DataFrame.
     """
     logging.info("Starting data cleaning...🧼")
 
@@ -104,7 +104,7 @@ def clean_eia_data(df):
     logging.info("Data cleaning complete.")
     return df
 
-# This function is responsible for writing the DataFrame to a file; I use the params 'df' (the data), and 'output_path' which is the final destination of the data (the csv file); This function does nto return anything because its saing the data to a file.
+# This function is responsible for writing the DataFrame to a file; I use the params 'df' (the dataframe), and 'output_path' which is the final destination of the data (the csv file); This function does not return anything because its saving the data to the csv file.
 def save_data_to_csv(df, output_path):
     """
     Saves the DataFrame to a CSV file.
