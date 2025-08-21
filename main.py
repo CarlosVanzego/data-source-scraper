@@ -146,6 +146,6 @@ if __name__ == "__main__":
         save_data_to_csv(cleaned_df, output_file)
         logging.info("Pipeline executed succesfully.")
 
-        # These lines print the results to my terminal to verify the process of information that.
+        # These lines prints a message to let me know the execution failed.
     else:
         logging.info("Pipeline failed to execute.")
