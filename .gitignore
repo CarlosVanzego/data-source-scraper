@@ -9,4 +9,4 @@ venv/
 config.py
 /output/
 
-# This ensures that the files mentioned above are hidden from my github pushes as they contains sensitive information.
+# This ensures that the files mentioned above are hidden from my github pushes as they contain sensitive information.

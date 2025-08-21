@@ -1,7 +1,7 @@
 # This is my test file; It will test that my data cleaning function renames columns correctly and converts data types as expected.
 # 'pytest' is a framework for writing tests in Python.
 # 'pandas' is for data manipulation and analysis.
-# 'from main import clean_eia_data' is importing my data cleaning function from my main.py file.
+# 'from main import clean_eia_data' is importing my data cleaning function from my main.py file.up
 import pytest
 import pandas as pd
 from main import clean_eia_data

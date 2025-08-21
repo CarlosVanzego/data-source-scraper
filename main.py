@@ -13,8 +13,10 @@ import json
 import os 
 import logging
 
+
 # Configuring the logging module 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+
 
 # Part 2: Set up Command-Line Arguments
 # This section makes my script flexible. Instead of harcoding values.
@@ -26,11 +28,20 @@ parser.add_argument("--route", type=str, required=True, help="The EIA API route 
 # I'm then storing the parsed arguments into a variable called 'args'
 args = parser.parse_args()
 
+
 # Part 3: Define the Core Functions (API call)
 # This is a reusable function that handles the logic of connecting to the API and dealing with potential errors; It takes the parameters 'api_key' and 'route', this is where my command in the command-line will take those two pieces of information, then the function returns that data from the EIA API.
 def fetch_eia_data(api_key, route):
     """
-    Fetches data from the EIA API using the provided API key and route
+    Fetches data from the EIA API using the provided API key and route.
+
+     Args:
+        api_key: the given API key.
+
+        route: the route to the specific data (i.e. petroleum/crd/crpdn/data)
+
+    Returns:
+        A cleaned and transformed DataFrame.
     """
     # The base URL is the main entry point for the EIA's API.
     base_url = "https://api.eia.gov"
